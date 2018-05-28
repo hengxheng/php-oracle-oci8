@@ -1,0 +1,9 @@
+version: '3'
+services:
+  app:
+    container_name: hengzou
+    image: hengzou/ico8-php7.2
+    ports:
+      - 800:80
+    volumes:
+      - ./trunk:/var/www/html

@@ -1,0 +1,25 @@
+FROM nimmis/apache-php7
+
+ENV LD_LIBRARY_PATH /usr/local/instantclient_12_1/
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends apt-utils
+RUN apt-get install -y unzip php7.0-dev libaio-dev php7.0-mbstring php7.0-zip sendmail
+RUN apt-get clean -y
+# Oracle instantclient
+ADD instantclient/instantclient-basic-linux.x64-12.1.0.2.0.zip /tmp/
+ADD instantclient/instantclient-sdk-linux.x64-12.1.0.2.0.zip /tmp/
+ADD instantclient/instantclient-sqlplus-linux.x64-12.1.0.2.0.zip /tmp/
+RUN unzip /tmp/instantclient-basic-linux.x64-12.1.0.2.0.zip -d /usr/local/
+RUN unzip /tmp/instantclient-sdk-linux.x64-12.1.0.2.0.zip -d /usr/local/
+RUN unzip /tmp/instantclient-sqlplus-linux.x64-12.1.0.2.0.zip -d /usr/local/
+RUN ln -s /usr/local/instantclient_12_1 /usr/local/instantclient
+RUN ln -s /usr/local/instantclient/libclntsh.so.12.1 /usr/local/instantclient/libclntsh.so
+RUN ln -s /usr/local/instantclient/sqlplus /usr/bin/sqlplus
+RUN echo 'instantclient,/usr/local/instantclient' | pecl install oci8
+RUN echo "extension=oci8.so" >> /etc/php/7.0/apache2/php.ini
+RUN rm /var/www/html/index.html
+COPY ./trunk /var/www/html
+
+ADD apache2.conf /etc/apache2/apache2.conf
+RUN a2enmod rewrite
+RUN service apache2 restart
